@@ -1,0 +1,25 @@
+@import '../../variables.scss';
+
+.device-control {
+    cursor: pointer;
+    font-size: 16px;
+    color: $primary;
+
+    .icon {
+        font-size: 80px;
+        text-align: center;
+    }
+
+    .toggle {
+        font-size: 40px;
+        opacity: 0.5;
+        margin-bottom: 10px;
+    }
+
+    &.on {
+        .toggle {
+            color: $primary;
+            opacity: 1;
+        }
+    }
+}

@@ -1,0 +1,25 @@
+@import '../../variables.scss';
+
+.location-map {
+    height: calc(100vh - 430px);
+}
+
+.weather {
+    padding-top: 20px;
+
+    .icon {
+        font-size: 60px;
+        color: rgba(102, 51, 153, 0.28);
+        margin-bottom: 12px;
+    }
+
+    .desc {
+        margin-bottom: 0;
+        font-size: 16px;
+        color: $primary;
+    }
+
+    .temp {
+        margin-bottom: 0;
+    }
+}
