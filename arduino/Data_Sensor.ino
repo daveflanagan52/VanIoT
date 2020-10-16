@@ -35,6 +35,15 @@ void setup() {
 #if DEV == 5
   controller.addDevice(new GPS("96c9f1f0-2386-4a1e-8822-a208090fb911", "GPS Tracker", "location"));
 #endif
+
+#if DEV == 6
+  controller.addDevice(new Gas(A0, 0, 26.572, 1.2894, "lpg", "a558ad84-dbe9-4c69-b7e0-049e557a86c0", "LPG Sensor", "burn"));
+#endif
+
+#if DEV == 7
+  controller.addDevice(new Temperature(2, "inside", "0b02187d-bf7f-4575-9404-37f7363b7897", "Inside Temperature", "temperature-low"));
+  controller.addDevice(new Temperature(3, "outside", "1bbb21bf-cdae-4bfa-a504-7cee030cc6db", "Outside Temperature", "temperature-low"));
+#endif
 }
 
 void loop() {

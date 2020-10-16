@@ -7,5 +7,7 @@
 #include "Heater.h"
 #include "Fan.h"
 #include "GPS.h"
+#include "Gas.h"
+#include "Temperature.h"
 
 #endif
