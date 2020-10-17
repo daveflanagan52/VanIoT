@@ -1,8 +1,6 @@
 #ifndef __LIGHT_H__
 #define __LIGHT_H__
 
-#define DISABLE_INPUT true
-
 #include <PubSubClient.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -11,33 +9,19 @@
 class Light : public VirtualDevice {
 private:
   int _lightPin;
-  int _buttonPin;
-  int _encoderPinA;
-  int _encoderPinB;
   bool _on;
   int _brightness;
   int _rotateAmount;
 
   int _min;
   int _max;
-
-  int _lastButtonState;
-  int _lastEncoderAState;
   
 public:
-  Light(int min, int max, int lightPin, int buttonPin, int encoderPinA, int encoderPinB, String id, String name, String icon)
+  Light(int min, int max, int lightPin, String id, String name, String icon)
     : VirtualDevice(id, name, icon) {
     pinMode(lightPin, OUTPUT);
-    pinMode(buttonPin, INPUT);
-    pinMode(encoderPinA, INPUT);
-    pinMode(encoderPinB, INPUT);
-    digitalWrite(encoderPinA, HIGH);
-    digitalWrite(encoderPinB, HIGH);
       
     _lightPin = lightPin;
-    _buttonPin = buttonPin;
-    _encoderPinA = encoderPinA;
-    _encoderPinB = encoderPinB;
     _on = false;
     _brightness = 255;
     _rotateAmount = 10;
@@ -65,39 +49,17 @@ public:
     if (topic == "device/" + _id + "/toggle") {
       _on = payload.toInt() == 1;
       updateState();
+      setState();
     }
     if (topic == "device/" + _id + "/brightness") {
       _brightness = payload.toInt();
       _on = true;
       updateState();
+      setState();
     }
   }
 
-  void update() {
-    VirtualDevice::update();
-
-#ifndef DISABLE_INPUT
-    int encoderAState = digitalRead(_encoderPinA);
-    if (encoderAState != _lastEncoderAState) {
-      if (digitalRead(_encoderPinB))
-        _brightness += _rotateAmount;
-      else
-        _brightness -= _rotateAmount;
-      _brightness = constrain(_brightness, 0, 255);
-      updateState();
-      _lastEncoderAState = encoderAState;
-    }
-      
-    int button = digitalRead(_buttonPin);
-    if (button != _lastButtonState) {
-      if (button == HIGH) {
-        _on = !_on;
-        updateState();
-      }
-      _lastButtonState = button;
-    }
-#endif
-    
+  void setState() {
     if (_on && _brightness > 0) {
       if (_brightness == 255)
         digitalWrite(_lightPin, HIGH);
