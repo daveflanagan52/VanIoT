@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faToggleOff, faToggleOn, faLightbulb, faFan, faHeat, faOutlet, faCarBattery, faMapMarked, faLocation } from '@fortawesome/pro-light-svg-icons';
+import { faToggleOff, faToggleOn, faLightbulb, faFan, faHeat, faOutlet, faCarBattery, faMapMarked, faLocation, faBurn, faTemperatureLow, faLightSwitch } from '@fortawesome/pro-light-svg-icons';
 
 import './DeviceControl.scss';
 import Card from '../Card';
@@ -13,6 +13,9 @@ const icons = {
     'car-battery': faCarBattery,
     'map-marked': faMapMarked,
     'location': faLocation,
+    'burn': faBurn,
+    'temperature-low': faTemperatureLow,
+    'light-switch': faLightSwitch,
 };
 
 export default (props) => {
