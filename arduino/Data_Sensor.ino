@@ -1,7 +1,7 @@
 #include "Devices.h"
 #include "Controller.h"
 
-#define DEV 2
+#define DEV 8
 Controller controller;
 
 void handleMessage(char* topic, byte* payload, unsigned int length) {
@@ -13,36 +13,41 @@ void setup() {
   controller.mqtt->setCallback(handleMessage);
 
 #if DEV == 1
-  controller.addDevice(new BMVMonitor("18af89ec-587c-4f14-b339-59e328f8f444", "Battery Stats", "car-battery"));
-  controller.addDevice(new Toggle(9, "c327d2d6-d8f1-4f57-94b3-08971eefd474", "Invertor", "outlet"));
+  controller.addDevice(new BMVMonitor("battery", "Battery Stats", "car-battery"));
+  controller.addDevice(new Toggle(9, "invertor", "Invertor", "outlet"));
 #endif
 
 #if DEV == 2
-  controller.addDevice(new Light(85, 110, A0, 2, 3, 4, "7b40d06b-bef3-496a-9fa9-08f82078be78", "Front Lights", "lightbulb"));
-  controller.addDevice(new Light(250, 255, A1, 5, 6, 8, "c5894f6c-0bf5-4cb2-9987-f39a0b786d38", "Kitchen Lights", "lightbulb"));
-  controller.addDevice(new Light(50, 150, A2, 9, 10, 11, "2cbfc82e-2541-4777-9a91-93b052842f0a", "Rear Lights", "lightbulb"));
-  controller.addDevice(new Toggle(A3, "88b3a6a8-ae20-43b7-bdf3-ba70a83db81a", "Cooling Fan", "fan"));
+  controller.addDevice(new Light(85, 110, A0, "front-lights", "Front Lights", "lightbulb"));
+  controller.addDevice(new Light(250, 255, A1, "kitchen-lights", "Kitchen Lights", "lightbulb"));
+  controller.addDevice(new Light(50, 150, A2, "rear-lights", "Rear Lights", "lightbulb"));
 #endif
 
 #if DEV == 3
-  controller.addDevice(new Heater("63e2f136-380f-4f69-aa02-c06cf987688d", "Heater", "heat"));
+  controller.addDevice(new Heater("heater", "Heater", "heat"));
 #endif
 
 #if DEV == 4
-  controller.addDevice(new Fan("b6932790-e9e0-4fe8-9ffb-b8a4a4a3f740", "Heater", "fan"));
+  controller.addDevice(new Fan("fan", "Fan", "fan"));
 #endif
 
 #if DEV == 5
-  controller.addDevice(new GPS("96c9f1f0-2386-4a1e-8822-a208090fb911", "GPS Tracker", "location"));
+  controller.addDevice(new GPS("gps", "GPS Tracker", "location"));
 #endif
 
 #if DEV == 6
-  controller.addDevice(new Gas(A0, 0, 26.572, 1.2894, "lpg", "a558ad84-dbe9-4c69-b7e0-049e557a86c0", "LPG Sensor", "burn"));
+  controller.addDevice(new Gas(A0, 0, 26.572, 1.2894, "lpg", "lpg", "LPG Sensor", "burn"));
 #endif
 
 #if DEV == 7
-  controller.addDevice(new Temperature(2, "inside", "0b02187d-bf7f-4575-9404-37f7363b7897", "Inside Temperature", "temperature-low"));
-  controller.addDevice(new Temperature(3, "outside", "1bbb21bf-cdae-4bfa-a504-7cee030cc6db", "Outside Temperature", "temperature-low"));
+  controller.addDevice(new Temperature(2, "inside", "inside-temperature", "Inside Temperature", "temperature-low"));
+  controller.addDevice(new Temperature(3, "outside", "outside-temperature", "Outside Temperature", "temperature-low"));
+#endif
+
+#if DEV == 8
+  controller.addDevice(new LightSwitch(2, 3, 4, "front-lights", "switch-1", "Switch 1", "light-switch"));
+  controller.addDevice(new LightSwitch(5, 6, 7, "kitchen-lights", "switch-2", "Switch 2", "light-switch"));
+  controller.addDevice(new LightSwitch(8, 9, 10, "rear-lights", "switch-3", "Switch 3", "light-switch"));
 #endif
 }
 
