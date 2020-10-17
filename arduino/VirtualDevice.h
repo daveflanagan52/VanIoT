@@ -71,6 +71,8 @@ public:
     serializeJson(data, output);
     if (!_mqtt->publish("device/state", output.c_str()))
       Serial.println("Failed to send message");
+    if (!_mqtt->publish(("device/" + _id + "/state").c_str(), output.c_str()))
+      Serial.println("Failed to send message");
   }
 
   virtual void handleMessage(String topic, String payload) {}
