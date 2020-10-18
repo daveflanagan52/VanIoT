@@ -51,9 +51,11 @@ public:
           Serial.println(" is not valid.");
       }
     } else {
+      DynamicJsonDocument data(1024);
+      deserializeJson(data, s);
       for (int i = 0; i < _deviceIndex; i++) {
         if (_devices[i] && _devices[i]->isSubscribed(topic))
-          _devices[i]->handleMessage(topic, s);
+          _devices[i]->handleMessage(topic, data.as<JsonObject>());
       }
     }
     Serial.println("Message handled");

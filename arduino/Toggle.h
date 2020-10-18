@@ -32,10 +32,10 @@ public:
     object["toggle"] = "bool";
   }
   
-  void handleMessage(String topic, String payload) {
+  void handleMessage(String topic, JsonObject payload) {
     if (topic == "device/" + _id + "/toggle") {
-      _on = payload.toInt() == 1;
-      digitalWrite(_pin, _on ? HIGH : LOW);
+      _on = payload["value"];
+      digitalWrite(_pin, _on ? LOW : HIGH);
       updateState();
     }
   }

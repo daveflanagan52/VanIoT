@@ -1,6 +1,15 @@
 #ifndef __TEMPERATURE_H__
 #define __TEMPERATURE_H__
 
+// Pull up Resistor sizing
+// Length  5V    3V
+// 10cm    10K   6,8K
+// 20cm    8,2K  4,7K
+// 50cm    4,7K  3,3K
+// 100cm   3,3K  2,2K
+// 200cm   2,2K  1K
+// 500cm   1K    -
+
 #include <VEDirect.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>

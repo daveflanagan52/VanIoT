@@ -43,9 +43,10 @@ public:
     subTopic("device/" + _light + "/state");
   }
 
-  void handleMessage(String topic, String payload) {
+  void handleMessage(String topic, JsonObject payload) {
     if (topic == "device/" + _light + "/state") {
-      
+      _on = payload["toggle"];
+      _brightness = payload["brightness"];
     }
   }
 

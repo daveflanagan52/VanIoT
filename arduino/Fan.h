@@ -40,25 +40,25 @@ public:
   void getCapabilitiesJson(JsonObject object) {
     object["toggle"] = "bool";
     object["open"] = "bool";
-    object["direction"] = "number";
+    object["direction"] = "number:0:1";
     object["speed"] = "percent";
   }
   
-  void handleMessage(String topic, String payload) {
+  void handleMessage(String topic, JsonObject payload) {
     if (topic == "device/" + _id + "/toggle") {
-      _on = payload.toInt() == 1;
+      _on = payload["value"];
       updateState();
     }
     if (topic == "device/" + _id + "/open") {
-      _open = payload.toInt() == 1;
+      _open = payload["value"];
       updateState();
     }
     if (topic == "device/" + _id + "/direction") {
-      _direction = payload.toInt();
+      _direction = payload["value"];
       updateState();
     }
     if (topic == "device/" + _id + "/speed") {
-      _speed = payload.toInt();
+      _speed = payload["value"];
       updateState();
     }
   }

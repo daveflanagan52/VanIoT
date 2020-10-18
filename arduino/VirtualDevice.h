@@ -75,7 +75,7 @@ public:
       Serial.println("Failed to send message");
   }
 
-  virtual void handleMessage(String topic, String payload) {}
+  virtual void handleMessage(String topic, JsonObject payload) {}
   virtual void subscribe() {
     _topicIndex = 0;
   }

@@ -42,17 +42,17 @@ public:
 
   void getCapabilitiesJson(JsonObject object) {
     object["toggle"] = "bool";
-    object["brightness"] = "percent";
+    object["brightness"] = "number:0:255";
   }
   
-  void handleMessage(String topic, String payload) {
+  void handleMessage(String topic, JsonObject payload) {
     if (topic == "device/" + _id + "/toggle") {
-      _on = payload.toInt() == 1;
+      _on = payload["value"];
       updateState();
       setState();
     }
     if (topic == "device/" + _id + "/brightness") {
-      _brightness = payload.toInt();
+      _brightness = payload["value"];
       _on = true;
       updateState();
       setState();
