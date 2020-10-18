@@ -17,7 +17,8 @@ const icons = {
 
 export default (props) => {
     const capabilities = Object.entries(props.capabilities).map(arr => {
-        switch(arr[1]) {
+        const type = arr[1].split(':');
+        switch(type[0]) {
             case 'percent':
                 return (
                     <span key={arr[0]} className='percent'>
@@ -29,7 +30,18 @@ export default (props) => {
                             />
                     </span>
                 );
-            case 'bool':
+            case 'number':
+                return (
+                    <span key={arr[0]} className='percent'>
+                        <InputRange
+                            value={props.state[arr[0]]}
+                            minValue={type[1]}
+                            maxValue={type[2]}
+                            onChange={value => props.setDeviceState(props.id, arr[0], value)}
+                            />
+                    </span>
+                );
+        case 'bool':
                 return (
                     <FontAwesomeIcon 
                         key={arr[0]} 
@@ -41,7 +53,15 @@ export default (props) => {
             default:
                 return null;
         }
-    })
+    }).filter(x => x);
+    const state = Object.entries(props.state).map(arr => {
+        switch (arr[0]) {
+            case 'errorCode':
+                return (<span>Error: {arr[1]}</span>);
+            default:
+                return null;
+        }
+    }).filter(x => x);
 
     return (
         <div className='row device-details align-items-center'>
@@ -50,6 +70,7 @@ export default (props) => {
             <div className='col'>
                 <div className='d-flex align-items-center capabilities'>
                     {capabilities}
+                    {state}
                 </div>
             </div>
         </div>
