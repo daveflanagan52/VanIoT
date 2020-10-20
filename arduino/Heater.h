@@ -6,6 +6,61 @@
 #include <ArduinoJson.h>
 #include "VirtualDevice.h"
 
+enum command_enum {
+  CMD_NONE = 0,
+  CMD_START = 160,
+  CMD_STOP = 5,
+};
+
+enum mode_enum {
+  MODE_THERMO = 50,
+  MODE_FIXED = 205,
+};
+
+struct request_t
+{
+  uint8_t deviceType;
+  uint8_t dataSize;
+  uint8_t command;
+  uint8_t temperature;
+  uint8_t setTemperature;
+  uint8_t minPumpFreq;
+  uint8_t maxPumpFreq;
+  uint16_t minFanSpeed;
+  uint16_t maxFanSpeed;
+  uint8_t operatingVoltage;
+  uint8_t fanSpeedSensor;
+  uint8_t mode;
+  uint8_t minTemperature;
+  uint8_t maxTemperature;
+  uint8_t glowPlugPower;
+  uint8_t prime;
+  uint16_t unknown1;
+  uint16_t altitude;
+  uint16_t crc;
+};
+
+struct response_t
+{
+  uint8_t deviceType;
+  uint8_t dataSize;
+  uint8_t runState;
+  uint8_t onOff;
+  uint16_t supplyVoltage;
+  uint16_t fanRPM;
+  uint16_t fanVoltage;
+  uint16_t heatExchangerTemp;
+  uint16_t glowPlugVoltage;
+  uint16_t glowPlugCurrent;
+  uint8_t pumpFreq;
+  uint8_t errorCode;
+  uint8_t unknown1;
+  uint8_t fixedPupFreq;
+  uint8_t unknown2;
+  uint8_t unknown3;
+  uint16_t crc;
+};
+
 class Heater : public VirtualDevice {
 private:
   String _tempSensor;
@@ -13,58 +68,40 @@ private:
   
   long _lastPub;
   long _publishInterval;
-  byte* _request;
-  byte* _response;
+  request_t* _request;
+  response_t* _response;
+  response_t* _prevResponse;
 
   bool _requestStop;
   bool _requestStart;
   byte _requestTemp;
   byte _ambientTemp;
-
-  byte _runState;
-  byte _on;
-  int _supplyVoltage;
-  int _fanRPM;
-  int _fanVoltage;
-  int _heatExchangerTemp;
-  int _glowPlugVoltage;
-  int _glowPlugCurrent;
-  byte _pumpFreq;
-  byte _errorCode;
   
 public:
   Heater(String tempSensor, int enablePin, String id, String name, String icon)
     : VirtualDevice(id, name, icon) {
     _tempSensor = tempSensor;
     _enablePin = enablePin;
-    _on = false;
     _requestTemp = 25;
 
-    _request = new byte[24];
-    _request[0] = 0x76;
-    _request[1] = 0x16;
-    _request[2] = 0x00;  // Command, 0x05 = stop, 0xA0 = start
-    _request[3] = 0x00;  // Temperature
-    _request[4] = 0x00;  // Set temperature
-    _request[5] = 0x0E;  // Minimum Pump frequency
-    _request[6] = 0x1E;  // Maximum Pump frequency
-    _request[7] = bitRead(0x05DC, 1);  // Minimum fan speed msb
-    _request[8] = bitRead(0x05DC, 0);  // Minimum fan speed lsb
-    _request[9] = bitRead(0x0C80, 1);  // Maximum fan speed msb
-    _request[10] = bitRead(0x0C80, 0); // Maximum fan speed lsb
-    _request[11] = 0x78; // Operating voltage
-    _request[12] = 0x01; // Fan speed sensor
-    _request[13] = 0x32; // Mode, 0xCD fixed mode
-    _request[14] = 0x08; // Min temperature
-    _request[15] = 0x23; // Max temperature
-    _request[16] = 0x05; // Glow plug power
-    _request[17] = 0x00; // Prime 0x5A
-    _request[18] = 0xEB; // ???
-    _request[19] = 0x47; // ???
-    _request[20] = bitRead(0x0DAC, 1); // Altitude msb
-    _request[21] = bitRead(0x0DAC, 1); // Altitude lsb
-    _request[22] = 0x00; // CRC-16/MODBUS msb
-    _request[23] = 0x00; // CRC-16/MODBUS lsb
+    _request = new request_t();
+    _request->deviceType = 118;
+    _request->dataSize = 22;
+    _request->minPumpFreq = 14;
+    _request->maxPumpFreq = 30;
+    _request->minFanSpeed = 1500;
+    _request->maxFanSpeed = 3200;
+    _request->operatingVoltage = 120;
+    _request->fanSpeedSensor = 1;
+    _request->mode = MODE_THERMO;
+    _request->minTemperature = 8;
+    _request->maxTemperature = 35;
+    _request->glowPlugPower = 5;
+    _request->unknown = 60231;
+    _request->altitude = 3500;
+
+    _response = new response_t();
+    _prevResponse = new response_t();
     
     _publishInterval = 500;
     _lastPub = 0;
@@ -79,17 +116,11 @@ public:
   }
 
   void getStateJson(JsonObject object) {
-    object["toggle"] = _on;
+    object["toggle"] = _response->onOff;
     object["temperature"] = _requestTemp;
-    object["state"] = _runState;
-    //object["supplyVoltage"] = _supplyVoltage;
-    //object["fanRPM"] = _fanRPM;
-    //object["fanVoltage"] = _fanVoltage;
-    //object["heatExchangerTemp"] = _heatExchangerTemp;
-    //object["glowPlugVoltage"] = _glowPlugVoltage;
-    //object["glowPlugCurrent"] = _glowPlugCurrent;
-    object["pumpFreq"] = _pumpFreq;
-    object["errorCode"] = _errorCode;
+    object["state"] = _response->runState;
+    object["pumpFreq"] = _response->pumpFreq;
+    object["errorCode"] = _response->errorCode;
   }
 
   void getCapabilitiesJson(JsonObject object) {
@@ -135,100 +166,41 @@ public:
       _lastPub = ms;
 
       if (_requestStop) { // Turn off
-        _request[2] = 0x05;
+        _request->command = CMD_STOP;
         _requestStop = false;
       }
       else if(_requestStart) { // Turn on
-        _request[2] = 0xA0;
+        _request->command = CMD_START;
         _requestStart = false;
       }
       else
-        _request[2] = 0x00;
-      _request[3] = _ambientTemp;
-      _request[4] = _requestTemp;
+        _request->command = CMD_NONE;
+      _request->temperature = _ambientTemp;
+      _request->setTemperature = _requestTemp;
 
-      unsigned int crc = computeCRC(_request, 22);
-      _request[22] = bitRead(crc, 0);
-      _request[23] = bitRead(crc, 1);
+      unsigned int crc = computeCRC((byte*)_request, 22);
+      _request->crc = word(bitRead(crc, 0), bitRead(crc, 1));
       
       digitalWrite(_enablePin, HIGH);
-      for (int i = 0; i < 24; i++)
-        Serial1.print(_request[i]);
+      Serial1.write((byte*)&_request, sizeof(_request));
       digitalWrite(_enablePin, LOW);
   
-      int i = 0;
-      while (Serial1.available()) {
-        _response[i] = Serial1.read();
-        Serial.print(_response[i], HEX);
-        i++;
-      }
-      Serial.println();
-
+      Serial1.readBytes((byte*)_response, sizeof(response_t));
       bool changed = false;
-
-      crc = computeCRC(_response, 22);
-      if (word(_response[23], _response[22]) != crc)
-        Serial.println("Invalid response CRC, data may be invalid");
-      
-      if (_response[2] != _runState) {
-        _runState = _response[2];
+      crc = computeCRC((byte*)_response, 22);
+      if (_response->crc != word(bitRead(crc, 0), bitRead(crc, 1)))
+        Serial.println("Invalid response CRC, data may be invalid");      
+      if (_response->runState != _prevResponse->runState)
         changed = true;
-      }
-      
-      if (_response[3] != _on) {
-        _on = _response[3];
+      if (_response->onOff != _prevResponse->onOff)
+        changed = true;      
+      if (_response->pumpFreq != _prevResponse->pumpFreq)
+        changed = true;      
+      if (_response->errorCode != _prevResponse->errorCode)
         changed = true;
-      }
-
-      int supplyVoltage = word(_response[4], _response[5]);
-      if (supplyVoltage != _supplyVoltage) {
-        _supplyVoltage = supplyVoltage;
-        //changed = true;
-      }
-
-      int fanRPM = word(_response[6], _response[7]);
-      if (fanRPM != _fanRPM) {
-        _fanRPM = fanRPM;
-        //changed = true;
-      }
-
-      int fanVoltage = word(_response[8], _response[9]);
-      if (fanVoltage != _fanVoltage) {
-        _fanVoltage = fanVoltage;
-        //changed = true;
-      }
-
-      int heatExchangerTemp = word(_response[10], _response[11]);
-      if (heatExchangerTemp != _heatExchangerTemp) {
-        _heatExchangerTemp = heatExchangerTemp;
-        //changed = true;
-      }
-
-      int glowPlugVoltage = word(_response[12], _response[13]);
-      if (glowPlugVoltage != _glowPlugVoltage) {
-        _glowPlugVoltage = glowPlugVoltage;
-        //changed = true;
-      }
-
-      int glowPlugCurrent = word(_response[14], _response[15]);
-      if (glowPlugCurrent != _glowPlugCurrent) {
-        _glowPlugCurrent = glowPlugCurrent;
-        //changed = true;
-      }
-      
-      if (_response[16] != _pumpFreq) {
-        _pumpFreq = _response[16];
-        changed = true;
-      }
-      
-      if (_response[17] != _errorCode) {
-        _errorCode = _response[17];
-        changed = true;
-      }
-
       if (changed)
-        updateState();
-      
+        updateState();   
+      memcpy(&_prevResponse, &_response, sizeof(response_t));   
     }
   }
 };
