@@ -157,19 +157,18 @@ class App extends React.Component {
             let data = JSON.parse(new TextDecoder("utf-8").decode(message));
             console.log('Recieved message', topic, data);
             switch (topic) {
-                case 'device':
-                    {
-                        let devices = [...this.state.devices.filter(d => d.id !== data.id), data].sort((a, b) => {
-                            if (a.name < b.name)
-                                return -1;
-                            if (a.name > b.name)
-                                return 1;
-                            return 0;
-                        });
-                        this.setState({ devices: devices });
-                        break;
-                    }
-                case 'device/state':
+                case 'device': {
+                    let devices = [...this.state.devices.filter(d => d.id !== data.id), data].sort((a, b) => {
+                        if (a.name < b.name)
+                            return -1;
+                        if (a.name > b.name)
+                            return 1;
+                        return 0;
+                    });
+                    this.setState({ devices: devices });
+                    break;
+                }
+                case 'device/state': {
                     let devices = this.state.devices.map(d => {
                         if (d.id === data.id)
                             d.state = data.state;
@@ -177,7 +176,8 @@ class App extends React.Component {
                     });
                     this.setState({ devices: devices });
                     break;
-                case 'data/location':
+                }
+                case 'data/location': {
                     const updateWeather = Math.abs(this.state.data.location.latitude) < Number.EPSILON && Math.abs(this.state.data.location.longitude) < Number.EPSILON;
                     const locations = this.state.locations;
                     locations.push([data.latitude, data.longitude, Date.now()]);
@@ -186,18 +186,22 @@ class App extends React.Component {
                     if (updateWeather)
                         this.getWeather();
                     break;
-                case 'data/temperature':
-                    this.setState({ data: { ...this.state.data, temperatureInside: data.inside, temperatureOutside: data.outside } });
+                }
+                case 'data/temperature': {
+                    const temperatures = this.state.temperatures;
+                    temperatures.push([data.inside, data.outside, Date.now()]);
+                    const date = Date.now() - (1000 * 60 * 60 * 12);
+                    this.setState({ data: { ...this.state.data, temperatureInside: data.inside, temperatureOutside: data.outside }, temperatures: temperatures.filter(x => x[2] > date) });
                     break;
-                case 'data/battery':
+                }
+                case 'data/battery': {
                     this.setState({ data: { ...this.state.data, battery: parseFloat(data.soc) / 10, power: data.power } })
                     break;
-                case 'data/water':
+                }
+                case 'data/water': {
                     this.setState({ data: { ...this.state.data, water: data } });
                     break;
-                case 'data/network':
-                    this.setState({ data: { ...this.state.data, network: data } });
-                    break;
+                }
                 default:
                     break;
             }
