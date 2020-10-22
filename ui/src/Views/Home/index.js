@@ -76,9 +76,12 @@ class Home extends React.Component {
             : null;
 
         const favouriteDevices = [
-            '7b40d06b-bef3-496a-9fa9-08f82078be78', // Front lights
-            '2cbfc82e-2541-4777-9a91-93b052842f0a', // Rear lights
-            'c327d2d6-d8f1-4f57-94b3-08971eefd474', // Inverter
+            'front-lights',
+            'invertor',
+            'kitchen-lights',
+            'heater',
+            'rear-lights',
+            'fan',
         ];
         const deviceList = devices.filter(d => favouriteDevices.includes(d.id)).sort((a, b) => {
             let ai = favouriteDevices.findIndex(e => e === a.id);
