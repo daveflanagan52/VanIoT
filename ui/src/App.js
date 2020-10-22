@@ -33,9 +33,11 @@ class App extends React.Component {
                 network: !!window.navigator.onLine,
                 temperatureInside: '-',
                 temperatureOutside: '-',
-                location: {latitude: 0, longitude: 0, accuracy: 10, speed: 20},
+                location: { latitude: 0, longitude: 0, accuracy: 10, speed: 20 },
                 weather: undefined,
-            }
+            },
+            locations: [],
+            temperatures: [],
         };
 
         this.setDeviceState = this.setDeviceState.bind(this);
@@ -44,34 +46,34 @@ class App extends React.Component {
     async setDeviceState(id, key, value) {
         const topic = 'device/' + id + '/' + key;
         console.log(topic, value);
-        this.mqtt.publish(topic, JSON.stringify(value), {qos:2});
+        this.mqtt.publish(topic, JSON.stringify(value), { qos: 2 });
     }
 
     getWeather() {
         Axios.get(
-				'https://api.openweathermap.org/data/2.5/onecall?lat='
-				+ this.state.data.location.latitude
-				+ '&lon='
-				+ this.state.data.location.longitude
-				+ '&units=metric&exclude=minutely,hourly&appid='
-				+ process.env.REACT_APP_OPEN_WEATHER_MAP_API_KEY
-			)
-            .then(response => this.setState({data: {...this.state.data, weather: response.data}}))
+            'https://api.openweathermap.org/data/2.5/onecall?lat='
+            + this.state.data.location.latitude
+            + '&lon='
+            + this.state.data.location.longitude
+            + '&units=metric&exclude=minutely,hourly&appid='
+            + process.env.REACT_APP_OPEN_WEATHER_MAP_API_KEY
+        )
+            .then(response => this.setState({ data: { ...this.state.data, weather: response.data } }))
             .catch(e => {
-                this.setState({data: {...this.state.data, weather: undefined}});
+                this.setState({ data: { ...this.state.data, weather: undefined } });
                 this.addNotification('danger', 'Weather request failed: ' + e.message);
             });
     }
 
     addNotification(type, message) {
         this.setState(
-			{
-				notifications: [
-					...this.state.notifications,
-					{ id: uuidv4(), type: type, read: false, message: message, created: Date.now() }
-				]
-			}
-		);
+            {
+                notifications: [
+                    ...this.state.notifications,
+                    { id: uuidv4(), type: type, read: false, message: message, created: Date.now() }
+                ]
+            }
+        );
     }
 
     readNotification(id) {
@@ -80,25 +82,25 @@ class App extends React.Component {
                 n.read = true;
             return n;
         });
-        this.setState({notifications: notifications});
+        this.setState({ notifications: notifications });
     }
 
     calculateDistance(lat1, lon1, lat2, lon2) {
         var R = 6371; // Radius of the earth in km
-        var dLat = this.deg2rad(lat2-lat1);  // deg2rad below
-        var dLon = this.deg2rad(lon2-lon1); 
-        var a = 
-          Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
-          Math.sin(dLon/2) * Math.sin(dLon/2)
-          ; 
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var dLat = this.deg2rad(lat2 - lat1);  // deg2rad below
+        var dLon = this.deg2rad(lon2 - lon1);
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         var d = R * c; // Distance in km
         return d;
     }
 
     deg2rad(deg) {
-        return deg * (Math.PI/180)
+        return deg * (Math.PI / 180)
     }
 
     async componentDidMount() {
@@ -135,13 +137,13 @@ class App extends React.Component {
             ],
         })
 
-        this.timeInterval = setInterval(() => this.setState({time: new Date()}), 500);
+        this.timeInterval = setInterval(() => this.setState({ time: new Date() }), 500);
 
         this.getWeather();
         this.weatherInterval = setInterval(() => this.getWeather(), 1000 * 60 * 15);
 
         this.mqtt = await MQTT.connectAsync(process.env.REACT_APP_MQTT_BROKER_URL).catch(error => console.log(error));
-        this.mqtt.publish('introduce', '', {qos:2});
+        this.mqtt.publish('introduce', '', { qos: 2 });
         this.mqtt.subscribe([
             'device',
             'device/state',
@@ -177,7 +179,10 @@ class App extends React.Component {
                     break;
                 case 'data/location':
                     const updateWeather = Math.abs(this.state.data.location.latitude) < Number.EPSILON && Math.abs(this.state.data.location.longitude) < Number.EPSILON;
-                    this.setState({ data: { ...this.state.data, location: data } });
+                    const locations = this.state.locations;
+                    locations.push([data.latitude, data.longitude, Date.now()]);
+                    const date = Date.now() - (1000 * 60 * 60 * 12);
+                    this.setState({ data: { ...this.state.data, location: data }, locations: locations.filter(x => x[2] > date) });
                     if (updateWeather)
                         this.getWeather();
                     break;
@@ -194,22 +199,30 @@ class App extends React.Component {
                     this.setState({ data: { ...this.state.data, network: data } });
                     break;
                 default:
-                    console.log('MQTT MESSAGE', topic, data, packet);
                     break;
             }
         });
     }
-  
+
     render() {
-        const {pages, page, notifications, devices, data, time} = this.state;
+        const { pages, page, notifications, devices, data, time, locations, temperatures } = this.state;
         if (pages.length === 0)
             return null;
         let Component = pages[page].element;
-        let pageElement = <Component devices={devices} setDeviceState={(id, key, state) => this.setDeviceState(id, key, state)} data={data} notifications={notifications} onAddNotification={(type, message) => this.addNotification(type, message)} onReadNotification={id => this.readNotification(id)} />;
+        let pageElement = <Component
+            devices={devices}
+            setDeviceState={(id, key, state) => this.setDeviceState(id, key, state)}
+            data={data}
+            notifications={notifications}
+            locations={locations}
+            temperatures={temperatures}
+            onAddNotification={(type, message) => this.addNotification(type, message)}
+            onReadNotification={id => this.readNotification(id)}
+        />;
         return (
             <div className='app'>
                 <Moment date={time} className='time' format='dddd Do MMMM YYYY - HH:mm:ss' />
-                <Menu pages={pages} selected={page} onPageClick={index => this.setState({page: index})} />
+                <Menu pages={pages} selected={page} onPageClick={index => this.setState({ page: index })} />
                 <ContentView>
                     {pageElement}
                 </ContentView>
