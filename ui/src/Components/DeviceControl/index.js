@@ -22,12 +22,12 @@ export default (props) => {
     return (
         <Card className={'device-control' + (props.state ? ' on' : '')} onClick={() => props.onDeviceClick()}>
             <div className='p-3'>
-                <div className='row'>
-                    <div className='col'><FontAwesomeIcon className='icon fa' icon={icons[props.icon]} /></div>
-                    <div className='col text-right'>
+                <div className=''>
+                    <div className='float-right text-right'>
                         <FontAwesomeIcon className='toggle' icon={props.state ? faToggleOn : faToggleOff} />
                         <p className='mb-0'>{props.name}</p>
                     </div>
+                    <div className=''><FontAwesomeIcon className='icon fa' icon={icons[props.icon]} /></div>
                 </div>
             </div>
         </Card>
