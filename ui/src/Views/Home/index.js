@@ -14,7 +14,7 @@ import './Home.scss';
 
 export const vanIcon = new L.Icon({
     iconUrl: '../../Resources/van.png',
-    iconAnchor: [16, 0],
+    iconAnchor: [16, 37],
     popupAnchor: [16, -37],
     iconSize: [32, 37],
 });
