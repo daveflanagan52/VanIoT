@@ -58,7 +58,7 @@ class Home extends React.Component {
         const { devices } = this.props;
         
         const weatherDesciption = weather
-            ? this.capitalize(weather.current.weather[0].description) + ', ' + weather.daily[0].temp.max + '°C - ' + weather.daily[0].temp.min + '°C'
+            ? this.capitalize(weather.current.weather[0].description) + ', ' + weather.daily[0].temp.min + '°C - ' + weather.daily[0].temp.max + '°C'
             : 'Waiting for weather data...';
 
         const WeatherForecast = weather
