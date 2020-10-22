@@ -47,7 +47,7 @@ export default (props) => {
                         key={arr[0]} 
                         className={props.state[arr[0]] ? 'toggle on' : 'toggle'} 
                         icon={props.state[arr[0]] ? faToggleOn : faToggleOff}
-                        onClick={() => props.setDeviceState(props.id, arr[0], {value:props.state[arr[0]] ? 0 : 1})}
+                        onClick={() => props.setDeviceState(props.id, arr[0], {value:props.state[arr[0]] ? false : true})}
                         />
                 );
             default:

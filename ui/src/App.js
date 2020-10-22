@@ -153,7 +153,7 @@ class App extends React.Component {
         ]);
         this.mqtt.on('message', (topic, message, packet) => {
             let data = JSON.parse(new TextDecoder("utf-8").decode(message));
-            console.log('Recieved message', topic);
+            console.log('Recieved message', topic, data);
             switch (topic) {
                 case 'device':
                     {
