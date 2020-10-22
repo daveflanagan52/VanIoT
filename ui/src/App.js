@@ -119,11 +119,11 @@ class App extends React.Component {
                     icon: faPhoneLaptop,
                     element: Devices,
                 },
-                {
+                /*{
                     title: 'Routines',
                     icon: faBells,
                     element: Routines,
-                },
+                },*/
                 {
                     title: 'Location',
                     icon: faMapMarker,

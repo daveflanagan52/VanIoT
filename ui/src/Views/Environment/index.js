@@ -9,12 +9,12 @@ class Environment extends React.Component {
         const { temperatures } = this.props;
         const data = [
             {
-                label: 'Inside',
-                data: temperatures.map(x => [x[2], x[0]]),
-            },
-            {
                 label: 'Outside',
                 data: temperatures.map(x => [x[2], x[1]]),
+            },
+            {
+                label: 'Inside',
+                data: temperatures.map(x => [x[2], x[0]]),
             }
         ];
         const axes = [
