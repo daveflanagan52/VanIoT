@@ -26,7 +26,7 @@ export default (props) => {
                             value={props.state[arr[0]]}
                             minValue={0}
                             maxValue={255}
-                            onChange={value => props.setDeviceState(props.id, arr[0], value)}
+                            onChange={value => props.setDeviceState(props.id, arr[0], {value:value})}
                             />
                     </span>
                 );
@@ -37,7 +37,7 @@ export default (props) => {
                             value={props.state[arr[0]]}
                             minValue={type[1]}
                             maxValue={type[2]}
-                            onChange={value => props.setDeviceState(props.id, arr[0], value)}
+                            onChange={value => props.setDeviceState(props.id, arr[0], {value:value})}
                             />
                     </span>
                 );
@@ -47,7 +47,7 @@ export default (props) => {
                         key={arr[0]} 
                         className={props.state[arr[0]] ? 'toggle on' : 'toggle'} 
                         icon={props.state[arr[0]] ? faToggleOn : faToggleOff}
-                        onClick={() => props.setDeviceState(props.id, arr[0], props.state[arr[0]] ? 0 : 1)}
+                        onClick={() => props.setDeviceState(props.id, arr[0], {value:props.state[arr[0]] ? 0 : 1})}
                         />
                 );
             default:

@@ -99,7 +99,7 @@ class Home extends React.Component {
                         name={device.name}
                         icon={device.icon}
                         onDeviceClick={() => {
-                            this.props.setDeviceState(device.id, 'toggle', device.state.toggle ? 0 : 1)
+                            this.props.setDeviceState(device.id, 'toggle', {value:device.state.toggle ? 0 : 1})
                         }} 
                         />
                 </div>

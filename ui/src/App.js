@@ -44,7 +44,7 @@ class App extends React.Component {
     async setDeviceState(id, key, value) {
         const topic = 'device/' + id + '/' + key;
         console.log(topic, value);
-        this.mqtt.publish(topic, value.toString(), {qos:2});
+        this.mqtt.publish(topic, JSON.stringify(value), {qos:2});
     }
 
     getWeather() {
