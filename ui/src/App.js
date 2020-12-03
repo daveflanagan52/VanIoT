@@ -178,6 +178,8 @@ class App extends React.Component {
                     break;
                 }
                 case 'data/location': {
+                    if (Math.abs(data.latitude) < Number.EPSILON || Math.abs(data.longitude) < Number.EPSILON)
+                        break;
                     const updateWeather = Math.abs(this.state.data.location.latitude) < Number.EPSILON && Math.abs(this.state.data.location.longitude) < Number.EPSILON;
                     const locations = this.state.locations;
                     locations.push([data.latitude, data.longitude, Date.now()]);

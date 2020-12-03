@@ -15,6 +15,11 @@ const icons = {
     'location': faLocation,
 };
 
+const formatString = string => {
+    string = string.replace(/([A-Z])/g, ' $1').trim();
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export default (props) => {
     const capabilities = Object.entries(props.capabilities).map(arr => {
         const type = arr[1].split(':');
@@ -55,12 +60,10 @@ export default (props) => {
         }
     }).filter(x => x);
     const state = Object.entries(props.state).map(arr => {
-        switch (arr[0]) {
-            case 'errorCode':
-                return (<span>Error: {arr[1]}</span>);
-            default:
-                return null;
-        }
+        if (props.capabilities[arr[0]])
+            return null;
+        else
+            return (<span>{formatString(arr[0])}: {arr[1]}</span>);
     }).filter(x => x);
 
     return (
